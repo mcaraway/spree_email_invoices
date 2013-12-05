@@ -1,0 +1,14 @@
+<p id="notice"><%= notice %></p>
+
+<p>
+  <strong>Subject:</strong>
+  <%= @spree_email_invoice.subject %>
+</p>
+
+<p>
+  <strong>Date:</strong>
+  <%= @spree_email_invoice.date %>
+</p>
+
+<%= link_to 'Edit', edit_spree_email_invoice_path(@spree_email_invoice) %> |
+<%= link_to 'Back', spree_email_invoices_path %>

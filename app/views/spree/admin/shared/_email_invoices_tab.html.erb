@@ -1,0 +1,3 @@
+<% if can? :admin, Spree::EmailInvoice %>
+  <%= tab(:email_invoices, :url => spree.admin_email_invoices_path, :icon => 'icon-email') %>
+<% end %>

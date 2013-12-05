@@ -1,0 +1,25 @@
+<%= form_for(@spree_email_invoice) do |f| %>
+  <% if @spree_email_invoice.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@spree_email_invoice.errors.count, "error") %> prohibited this spree_email_invoice from being saved:</h2>
+
+      <ul>
+      <% @spree_email_invoice.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= f.label :subject %><br>
+    <%= f.text_field :subject %>
+  </div>
+  <div class="field">
+    <%= f.label :date %><br>
+    <%= f.date_select :date %>
+  </div>
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+<% end %>
