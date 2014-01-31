@@ -1,25 +1,126 @@
-<%= form_for(@spree_email_invoice) do |f| %>
-  <% if @spree_email_invoice.errors.any? %>
-    <div id="error_explanation">
-      <h2><%= pluralize(@spree_email_invoice.errors.count, "error") %> prohibited this spree_email_invoice from being saved:</h2>
+<div data-hook="admin_email_invoice_form_fields">
 
-      <ul>
-      <% @spree_email_invoice.errors.full_messages.each do |msg| %>
-        <li><%= msg %></li>
-      <% end %>
-      </ul>
-    </div>
-  <% end %>
+	<div class="left sixteen columns alpha" data-hook="admin_email_invoice_form_left">
+		<div class="seven columns">
+			<fieldset class="no-border-bottom">
+				<legend>
+					<%= Spree.t('Order Details') %>
+				</legend>
 
-  <div class="field">
-    <%= f.label :subject %><br>
-    <%= f.text_field :subject %>
-  </div>
-  <div class="field">
-    <%= f.label :date %><br>
-    <%= f.date_select :date %>
-  </div>
-  <div class="actions">
-    <%= f.submit %>
-  </div>
-<% end %>
+				<%= f.field_container :message_date do %>
+				<%= f.label :message_date, raw(Spree.t(:message_date) + content_tag(:span, ' *', :class => 'required')) %>
+				<%= f.text_field :message_date, :value => datepicker_field_value(@email_invoice.message_date), :class => 'fullwidth datepicker' %>
+				<%= f.error_message_on :message_date %>
+				<% end %>
+
+				<%= f.field_container :subject do %>
+				<%= f.label :subject, raw(Spree.t(:subject) + content_tag(:span, ' *', :class => 'required')) %>
+				<%= f.text_field :subject, :class => 'fullwidth title' %>
+				<%= f.error_message_on :subject %>
+				<% end %>
+
+				<%= f.field_container :order_number do %>
+				<%= f.label :order_number, raw(Spree.t(:order_number) + content_tag(:span, ' *', :class => 'required')) %>
+				<%= f.text_field :order_number, :class => 'fullwidth title' %>
+				<%= f.error_message_on :order_number %>
+				<% end %>
+
+				<%= f.field_container :shipping_method do %>
+				<%= f.label :shipping_method, raw(Spree.t(:shipping_method) + content_tag(:span, ' *', :class => 'required')) %>
+				<%= f.text_field :shipping_method, :class => 'fullwidth title' %>
+				<%= f.error_message_on :shipping_method %>
+				<% end %>
+
+				<%= f.field_container :shipping_state do %>
+				<%= f.label :shipping_state, raw(Spree.t(:shipping_state) + content_tag(:span, ' *', :class => 'required')) %>
+				<%= f.text_field :shipping_state, :class => 'fullwidth title', :readonly => true %>
+				<%= f.error_message_on :shipping_state %>
+				<% end %>
+
+				<%= f.field_container :tracking_number do %>
+				<%= f.label :tracking_number, raw(Spree.t(:tracking_number) + content_tag(:span, ' *', :class => 'required')) %>
+				<%= f.text_field :tracking_number, :class => 'fullwidth title' %>
+				<%= f.error_message_on :tracking_number %>
+				<% end %>
+			</fieldset>
+		</div>
+		<div class="eight columns">
+			<fieldset class="no-border-bottom">
+				<legend>
+					<%= Spree.t('Customer') %>
+				</legend>
+
+				<%= f.field_container :customer do %>
+				<%= f.label :customer, raw(Spree.t(:customer) + content_tag(:span, ' *', :class => 'required')) %>
+				<%= f.text_field :customer, :class => 'fullwidth title' %>
+				<%= f.error_message_on :customer %>
+				<% end %>
+
+				<%= f.field_container :company do %>
+				<%= f.label :company, raw(Spree.t(:company) + content_tag(:span, ' *', :class => 'required')) %>
+				<%= f.text_field :company, :class => 'fullwidth title' %>
+				<%= f.error_message_on :company %>
+				<% end %>
+
+				<%= f.field_container :address do %>
+				<%= f.label :address, raw(Spree.t(:address) + content_tag(:span, ' *', :class => 'required')) %>
+				<%= f.text_field :address, :class => 'fullwidth title' %>
+				<%= f.error_message_on :address %>
+				<% end %>
+
+				<%= f.field_container :city do %>
+				<%= f.label :city, raw(Spree.t(:city) + content_tag(:span, ' *', :class => 'required')) %>
+				<%= f.text_field :city, :class => 'fullwidth title' %>
+				<%= f.error_message_on :city %>
+				<% end %>
+
+				<%= f.field_container :state do %>
+				<%= f.label :state, raw(Spree.t(:state) + content_tag(:span, ' *', :class => 'required')) %>
+				<%= f.text_field :state, :class => 'fullwidth title' %>
+				<%= f.error_message_on :state %>
+				<% end %>
+
+				<%= f.field_container :zip do %>
+				<%= f.label :zip, raw(Spree.t(:zip) + content_tag(:span, ' *', :class => 'required')) %>
+				<%= f.text_field :zip, :class => 'fullwidth title' %>
+				<%= f.error_message_on :zip %>
+				<% end %>
+
+				<%= f.field_container :phone do %>
+				<%= f.label :phone, raw(Spree.t(:phone) + content_tag(:span, ' *', :class => 'required')) %>
+				<%= f.text_field :phone, :class => 'fullwidth title' %>
+				<%= f.error_message_on :phone %>
+				<% end %>
+
+				<%= f.field_container :email do %>
+				<%= f.label :email, raw(Spree.t(:email) + content_tag(:span, ' *', :class => 'required')) %>
+				<%= f.text_field :email, :class => 'fullwidth title' %>
+				<%= f.error_message_on :email %>
+				<% end %>
+			</fieldset>
+		</div>
+		<div class="fifteen columns">
+			<fieldset class="no-border-bottom">
+				<legend>
+					<%= Spree.t('Line Items') %>
+				</legend>
+				<table>
+					<thead>
+						<th><%= Spree.t('name')%></th>
+						<th><%= Spree.t('quantity')%></th>
+					</thead>
+					<tbody id="order-charges" data-hook="order_details_adjustments"  class="with-border">
+						<% @email_invoice.email_invoice_items.each do |item| %>
+						<tr class="total">
+							<td><strong><%= item.name %>:</strong></td>
+							<td class="total align-center"><span><%= item.count %></span></td>
+						</tr>
+						<% end %>
+					</tbody>
+				</table>
+			</fieldset>
+		</div>
+	</div>
+
+	<div class="clear"></div>
+</div>

@@ -1,5 +1,5 @@
 class Spree::Admin::EmailInvoicesController < Spree::Admin::ResourceController
-  before_action :set_spree_email_invoice, only: [:show, :edit, :update, :destroy]
+  before_filter :load_email_invoice, :only => [:show, :edit, :update, :destroy, :create_order]
   # GET /spree/email_invoices
   def index
     params[:q] ||= {}
@@ -23,7 +23,7 @@ class Spree::Admin::EmailInvoicesController < Spree::Admin::ResourceController
           page(params[:page]).
           per(params[:per_page] || Spree::Config[:orders_per_page])
 
-    @email_invoices.each do |invoice| 
+    @email_invoices.each do |invoice|
       invoice.extract_invoice_info
     end
     # Restore dates
@@ -38,7 +38,7 @@ class Spree::Admin::EmailInvoicesController < Spree::Admin::ResourceController
 
   # GET /spree/email_invoices/new
   def new
-    @spree_email_invoice = Spree::EmailInvoice.new
+    @email_invoice = Spree::EmailInvoice.new
   end
 
   # GET /spree/email_invoices/1/edit
@@ -47,10 +47,10 @@ class Spree::Admin::EmailInvoicesController < Spree::Admin::ResourceController
 
   # POST /spree/email_invoices
   def create
-    @spree_email_invoice = Spree::EmailInvoice.new(spree_email_invoice_params)
+    @email_invoice = Spree::EmailInvoice.new(spree_email_invoice_params)
 
-    if @spree_email_invoice.save
-      redirect_to @spree_email_invoice, notice: 'Email invoice was successfully created.'
+    if @email_invoice.save
+      redirect_to @email_invoice, notice: 'Email invoice was successfully created.'
     else
       render action: 'new'
     end
@@ -58,8 +58,8 @@ class Spree::Admin::EmailInvoicesController < Spree::Admin::ResourceController
 
   # PATCH/PUT /spree/email_invoices/1
   def update
-    if @spree_email_invoice.update(spree_email_invoice_params)
-      redirect_to @spree_email_invoice, notice: 'Email invoice was successfully updated.'
+    if @email_invoice.update(spree_email_invoice_params)
+      redirect_to @email_invoice, notice: 'Email invoice was successfully updated.'
     else
       render action: 'edit'
     end
@@ -67,37 +67,83 @@ class Spree::Admin::EmailInvoicesController < Spree::Admin::ResourceController
 
   # DELETE /spree/email_invoices/1
   def destroy
-    @spree_email_invoice.destroy
+    @email_invoice.destroy
     redirect_to spree_email_invoices_url, notice: 'Email invoice was successfully destroyed.'
   end
 
-  # POST /spree/test_emails
-  def test_emails
-    logger.debug "Testing emails"
+  def create_order
+    @order = Spree::Order.create
+    @order.associate_user!(Spree::User.where(:email => Spree::EmailInvoices::Config[:user_email_address]).first)
+    @order.line_items = @email_invoice.get_line_items(@order)
+    @order.shipping_address = @email_invoice.get_shipping_address
+    @order.billing_address = @email_invoice.get_shipping_address
 
-    @invoice = Spree::EmailInvoice.first
-    @invoice.extract_invoice_info
+    unless @order.next
+      flash[:error] = @order.errors.full_messages.join("\n")
+      render action: 'edit' and return
+    end
+    @order.shipping_method_id = @email_invoice.get_shipping_method.id
+    @order.shipments = @email_invoice.get_shipment(@order)
 
+    unless @order.next
+      flash[:error] = @order.errors.full_messages.join("\n")
+      render action: 'edit' and return
+    end
+    @order.update!
+    @order.payments = get_payment(@order.total)
+
+    unless @order.next
+      flash[:error] = @order.errors.full_messages.join("\n")
+      render action: 'edit' and return
+    end
+    logger.debug "************************   completing order"
+    @order.update!
+    unless @order.next
+      flash[:error] = @order.errors.full_messages.join("\n")
+      render action: 'edit' and return
+    end
+    @order.update!
+    @order.finalize!
+    logger.debug "************************   saving order"
+    @order.save
+    logger.debug "************************   done saving order"
+    
+    @email_invoice.order = @order
+    
+    @email_invoice.save!
+    
     respond_to do |format|
-      format.html { redirect_to location_after_save }
+      format.html { render action: 'edit' }
       format.js   { render :layout => false }
     end
   end
 
-  def get_emails
-    Mail.defaults do
-      retriever_method :pop3, :address    => "pop.uniqteas.com",
-                              :port       => 995,
-                              :user_name  => 'orders@uniqteas.com',
-                              :password   => 'B4radhur',
-                              :enable_ssl => true
-    end
+  def move_to_next
+  end
 
-    emails = Mail.find(:what => :last, :count => 10, :order => :asc)
-    mail = emails.first
-    logger.debug "Subject: " + mail.subject
-    logger.debug "Body: " + mail.body.decoded
-    logger.debug "Body preamble: " + mail.body.preamble
+  def get_payment(total)
+    payments = Array.new
+
+    payment = Spree::Payment.new
+    payment.amount = total
+    payment.order = @order
+    payment.payment_method = Spree::PaymentMethod.where("name = 'Check' and environment = ?", Rails.env).first
+    logger.debug "************************   saving payment total = " + total.to_s + " method : " + payment.payment_method.name
+    payment.save
+    logger.debug "************************   done saving payment"
+
+    #payment.capture!
+
+    payments << payment
+  end
+
+  # POST /spree/update_emails
+  def update_emails
+    Spree::EmailInvoice.get_emails
+    respond_to do |format|
+      format.html { redirect_to location_after_save }
+      format.js   { render :layout => false }
+    end
   end
 
   protected
@@ -109,12 +155,13 @@ class Spree::Admin::EmailInvoicesController < Spree::Admin::ResourceController
   private
 
   # Use callbacks to share common setup or constraints between actions.
-  def set_spree_email_invoice
-    @spree_email_invoice = Spree::EmailInvoice.find(params[:id])
+  def load_email_invoice
+    @email_invoice = Spree::EmailInvoice.find(params[:id])
+    authorize! action, @email_invoice
   end
 
   # Only allow a trusted parameter "white list" through.
   def spree_email_invoice_params
-    params.require(:spree_email_invoice).permit(:subject, :date)
+    params.require(:email_invoice).permit(:subject, :date)
   end
 end

@@ -2,3 +2,25 @@
 # See https://github.com/svenfuchs/rails-i18n/tree/master/rails%2Flocale for starting points.
 
 en:
+  # email invoices configuration
+  spree:
+    user_email_address: Assign orders to this user
+    from_email_address: Accept invoices from this email address
+    pop_server: Pop Server Address
+    pop_port: Pop Server Port
+    pop_enable_ssl: Enable SSL
+    pop_user_email_address: Email Address for Pop Server
+    pop_user_password: Password 
+  
+  existing_orders: Orders for this invoice
+  back_to_list: Back to List
+  create_order: Create Order
+  update_emails: Update Invoices
+  activerecord:
+    attributes:
+       spree/email_invoice:
+         message_date: Date
+         subject: Subject
+         from: From
+         other: items
+      

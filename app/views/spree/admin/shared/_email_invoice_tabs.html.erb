@@ -1,0 +1,19 @@
+<% content_for :page_title do %>
+  <%= Spree.t(:editing_email_invoice) %> &ldquo;<%= @email_invoice.subject %>&rdquo;
+<% end %>
+
+<% content_for :sidebar_title do %>
+  <span class="sku"><%= @email_invoice.subject %></span>
+<% end %>
+
+<% content_for :sidebar do %>
+  <nav class="menu">
+    <ul data-hook="admin_email_invoice_tabs">
+      <%= content_tag :li, :class => ('active' if current == 'Product Details') do %>
+        <%= link_to_with_icon 'icon-edit', Spree.t(:email_invoice_details), edit_admin_email_invoice_url(@email_invoice) %>
+      <% end if can?(:admin, Spree::Product) %>
+      </li>
+    </ul>
+  </nav>
+
+<% end %>

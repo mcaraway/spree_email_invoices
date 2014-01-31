@@ -1,9 +1,13 @@
-module SpreeEmailInvoices
+module Spree::EmailInvoices
   class Engine < Rails::Engine
     require 'spree/core'
     isolate_namespace Spree
     engine_name 'spree_email_invoices'
 
+    initializer "spree.email_invoices.preferences", :before => :load_config_initializers do |app|
+      Spree::EmailInvoices::Config = Spree::EmailInvoicesConfiguration.new
+    end
+    
     config.autoload_paths += %W(#{config.root}/lib)
 
     # use rspec for tests

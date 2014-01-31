@@ -1,0 +1,32 @@
+<%= render :partial => 'spree/admin/shared/configuration_menu' %>
+
+<h1>Email Invoices Settings</h1>
+
+<%= form_for(@config, :as => "email_invoices_configuration", :url => admin_email_invoices_settings_path, :method => :put) do |form| %>
+
+<fieldset id="email_invoices_preferences">
+	<h4>User Config</h4>
+	<% @user_config.each do |key|
+	type = Spree::EmailInvoices::Config.preference_type(key) %>
+	<div class="field">
+		<%= label_tag(key, Spree.t(key)) + tag(:br) if type != :boolean %> 
+		<%= preference_field_tag(key, Spree::EmailInvoices::Config[key], :type => type) %>
+		<%= label_tag(key, Spree.t(key)) + tag(:br) if type == :boolean %>
+	</div>
+	<% end %>
+	
+	<h4>Pop Server Config</h4>
+	<% @pop_config.each do |key|
+	type = Spree::EmailInvoices::Config.preference_type(key) %>
+	<div class="field">
+		<%= label_tag(key, Spree.t(key)) + tag(:br) if type != :boolean %>
+		<%= preference_field_tag(key, Spree::EmailInvoices::Config[key], :type => type) %>
+		<%= label_tag(key, Spree.t(key)) + tag(:br) if type == :boolean %>
+	</div>
+	<% end %>
+</fieldset>
+<p class="form-buttons">
+	<%= button Spree.t('update') %>
+	<%= t("or") %> <%= link_to Spree.t("cancel"), admin_email_invoices_settings_url %>
+</p>
+<% end %>

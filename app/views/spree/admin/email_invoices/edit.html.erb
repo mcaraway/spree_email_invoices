@@ -1,6 +1,17 @@
-<h1>Editing spree_email_invoice</h1>
 
-<%= render 'form' %>
+<% content_for :page_actions do %>
+  <li><%= button_link_to Spree.t(:back_to_list), session[:return_to] || admin_email_invoices_url, :icon => 'icon-arrow-left' %></li>
+<% end %>
 
-<%= link_to 'Show', @spree_email_invoice %> |
-<%= link_to 'Back', spree_email_invoices_path %>
+<%= render :partial => 'spree/admin/shared/email_invoice_sub_menu' %>
+
+<%= render :partial => 'spree/shared/error_messages', :locals => { :target => @email_invoice } %>
+
+
+<%= form_for [:admin, @email_invoice], :method => :put, :html => { :multipart => true } do |f| %>
+  <fieldset class="no-border-top">
+	<%= render :partial => 'form', :locals => { :f => f } %>    
+	<%= render :partial => 'spree/admin/shared/edit_resource_links' %>
+  </fieldset>
+<% end %>
+
