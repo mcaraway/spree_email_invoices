@@ -72,7 +72,7 @@ class Spree::Admin::EmailInvoicesController < Spree::Admin::ResourceController
     Spree::EmailInvoicesJob.schedule
     respond_to do |format|
       format.html { redirect_to location_after_save }
-      format.js   { render :layout => false }
+      format.js   { redirect_to location_after_save }
     end
   end
 
