@@ -23,4 +23,5 @@ en:
          subject: Subject
          from: From
          other: items
+         shipping_state: Shipping State
       

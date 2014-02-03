@@ -57,7 +57,7 @@
 		<tr data-hook="admin_email_invoices_index_headers">
 			<th><%= sort_link @search, :message_date, I18n.t(:message_date, :scope => 'activerecord.attributes.spree/email_invoice') %></th>
 			<th><%= sort_link @search, :subject, I18n.t(:subject, :scope => 'activerecord.attributes.spree/email_invoice') %></th>
-			<th><%= sort_link @search, :from_address, I18n.t(:from, :scope => 'activerecord.attributes.spree/email_invoice') %></th>
+			<th><%= sort_link @search, :shipping_state, I18n.t(:shipping_state, :scope => 'activerecord.attributes.spree/email_invoice') %></th>
 			<th data-hook="admin_email_invoices_index_header_actions" class="actions"></th>
 		</tr>
 	</thead>
@@ -66,6 +66,7 @@
 		<tr data-hook="admin_email_invoices_index_rows">
 			<td class="align-center"><%= (email_invoice.message_date).to_date %></td>
 			<td class="align-center"><%= link_to email_invoice.subject, edit_admin_email_invoice_path(email_invoice) %></td>
+			<td class="align-center"><%= email_invoice.shipping_state %></td>
 			<td class='actions align-center' data-hook="admin_email_invoices_index_row_actions"> <%= link_to_edit_url edit_admin_email_invoice_path(email_invoice), :title => "admin_edit_#{dom_id(email_invoice)}", :no_text => true %> </td>
 		</tr>
 		<% end %>

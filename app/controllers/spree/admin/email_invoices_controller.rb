@@ -18,7 +18,7 @@ class Spree::Admin::EmailInvoicesController < Spree::Admin::ResourceController
       params[:q][:created_at_lt] = Time.zone.parse(params[:q][:created_at_lt]).end_of_day rescue ""
     end
 
-    @search = Spree::EmailInvoice.accessible_by(current_ability, :index).ransack(params[:q])
+    @search = Spree::EmailInvoice.accessible_by(current_ability, :index).order(created_at: :desc).ransack(params[:q])
     @email_invoices = @search.result(distinct: true).
           page(params[:page]).
           per(params[:per_page] || Spree::Config[:orders_per_page])
