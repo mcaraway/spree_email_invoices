@@ -1,7 +1,7 @@
 class Spree::EmailInvoicesJob
   include Spree::ScheduledJob
   
-  run_every 4.hours
+  run_every Spree::EmailInvoices::Config[:refresh_interval].minutes
   
   def display_name
     "EmailInvoicesJob"

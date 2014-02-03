@@ -2,7 +2,7 @@ class Spree::Admin::EmailInvoicesSettingsController < Spree::Admin::BaseControll
 
   def edit
     @config = Spree::EmailInvoicesConfiguration.new
-    @pop_config = [:pop_server, :pop_port, :pop_enable_ssl, :pop_user_email_address, :pop_user_password]
+    @pop_config = [:pop_server, :pop_port, :pop_enable_ssl, :pop_user_email_address, :pop_user_password, :refresh_interval]
     @user_config = [:user_email_address, :from_email_address]
   end
 

@@ -8,4 +8,5 @@ class Spree::EmailInvoicesConfiguration < Spree::Preferences::Configuration
   preference :pop_retrieve_email_count, :integer, :default => 20
   preference :from_email_address, :string, :default => "sales@coffeeforless.com"
   preference :user_email_address, :string, :default => "brian@coffeeforless.com"
+  preference :refresh_interval, :integer, :default => 240
 end

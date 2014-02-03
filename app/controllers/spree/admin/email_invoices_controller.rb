@@ -1,5 +1,5 @@
 class Spree::Admin::EmailInvoicesController < Spree::Admin::ResourceController
-  before_filter :load_email_invoice, :only => [:show, :edit, :update, :destroy, :create_order]
+  before_filter :load_email_invoice, :only => [:show, :edit, :update, :destroy]
   # GET /spree/email_invoices
   def index
     params[:q] ||= {}
@@ -38,7 +38,6 @@ class Spree::Admin::EmailInvoicesController < Spree::Admin::ResourceController
 
   # GET /spree/email_invoices/new
   def new
-    @email_invoice = Spree::EmailInvoice.new
   end
 
   # GET /spree/email_invoices/1/edit
@@ -47,13 +46,6 @@ class Spree::Admin::EmailInvoicesController < Spree::Admin::ResourceController
 
   # POST /spree/email_invoices
   def create
-    @email_invoice = Spree::EmailInvoice.new(spree_email_invoice_params)
-
-    if @email_invoice.save
-      redirect_to @email_invoice, notice: 'Email invoice was successfully created.'
-    else
-      render action: 'new'
-    end
   end
 
   # PATCH/PUT /spree/email_invoices/1
@@ -71,76 +63,13 @@ class Spree::Admin::EmailInvoicesController < Spree::Admin::ResourceController
     redirect_to spree_email_invoices_url, notice: 'Email invoice was successfully destroyed.'
   end
 
-  def create_order
-    @order = Spree::Order.create
-    @order.associate_user!(Spree::User.where(:email => Spree::EmailInvoices::Config[:user_email_address]).first)
-    @order.line_items = @email_invoice.get_line_items(@order)
-    @order.shipping_address = @email_invoice.get_shipping_address
-    @order.billing_address = @email_invoice.get_shipping_address
-
-    unless @order.next
-      flash[:error] = @order.errors.full_messages.join("\n")
-      render action: 'edit' and return
-    end
-    @order.shipping_method_id = @email_invoice.get_shipping_method.id
-    @order.shipments = @email_invoice.get_shipment(@order)
-
-    unless @order.next
-      flash[:error] = @order.errors.full_messages.join("\n")
-      render action: 'edit' and return
-    end
-    @order.update!
-    @order.payments = get_payment(@order.total)
-
-    unless @order.next
-      flash[:error] = @order.errors.full_messages.join("\n")
-      render action: 'edit' and return
-    end
-    logger.debug "************************   completing order"
-    @order.update!
-    unless @order.next
-      flash[:error] = @order.errors.full_messages.join("\n")
-      render action: 'edit' and return
-    end
-    @order.update!
-    @order.finalize!
-    logger.debug "************************   saving order"
-    @order.save
-    logger.debug "************************   done saving order"
-    
-    @email_invoice.order = @order
-    
-    @email_invoice.save!
-    
-    respond_to do |format|
-      format.html { render action: 'edit' }
-      format.js   { render :layout => false }
-    end
-  end
-
   def move_to_next
-  end
-
-  def get_payment(total)
-    payments = Array.new
-
-    payment = Spree::Payment.new
-    payment.amount = total
-    payment.order = @order
-    payment.payment_method = Spree::PaymentMethod.where("name = 'Check' and environment = ?", Rails.env).first
-    logger.debug "************************   saving payment total = " + total.to_s + " method : " + payment.payment_method.name
-    payment.save
-    logger.debug "************************   done saving payment"
-
-    #payment.capture!
-
-    payments << payment
   end
 
   # POST /spree/update_emails
   def update_emails
     # Spree::EmailInvoice.get_emails
-    Delayed::Job.enqueue Spree::EmailInvoicesJob.new()
+    Spree::EmailInvoicesJob.schedule
     respond_to do |format|
       format.html { redirect_to location_after_save }
       format.js   { render :layout => false }
