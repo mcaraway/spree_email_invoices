@@ -139,7 +139,8 @@ class Spree::Admin::EmailInvoicesController < Spree::Admin::ResourceController
 
   # POST /spree/update_emails
   def update_emails
-    Spree::EmailInvoice.get_emails
+    # Spree::EmailInvoice.get_emails
+    Delayed::Job.enqueue Spree::EmailInvoicesJob.new()
     respond_to do |format|
       format.html { redirect_to location_after_save }
       format.js   { render :layout => false }
